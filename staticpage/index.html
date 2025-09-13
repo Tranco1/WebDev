@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sticky Delights - Mobile E-commerce</title>
+  <style>
+    /* same styles as before ... */
+    /* keeping original styling intact */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background: #f9f3e9; color: #5a3e2b; }
+    header { background:#e67e22; color:#fff; padding:15px; text-align:center; position:sticky; top:0; z-index:100; box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+    .logo { font-size:1.5rem; font-weight:bold;}
+    .cart-icon { position:absolute; right:15px; top:15px; font-size:1.2rem; cursor:pointer;}
+    .cart-count { background:#e74c3c; color:white; border-radius:50%; padding:2px 6px; font-size:.8rem; position:absolute; top:-8px; right:-8px;}
+    .category-tabs{display:flex;background:#f1c40f;margin-bottom:10px;}
+    .tab{flex:1;text-align:center;padding:15px;cursor:pointer;font-weight:bold;color:#5a3e2b;}
+    .tab.active{border-bottom:3px solid #e67e22;background:#f8d486;}
+    .products{display:grid;grid-template-columns:1fr;gap:15px;padding:10px;}
+    .product-card{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.1);}
+    .product-image{width:50%;height:200px;object-fit:scale-down;}
+    .product-info{padding:15px;}
+    .product-title{font-weight:bold;margin-bottom:8px;font-size:1.1rem;}
+    .product-price{color:#e67e22;font-weight:bold;margin-bottom:10px;font-size:1.2rem;}
+    .toppings-section{margin:10px 0;}
+    .toppings-title{font-size:.9rem;margin-bottom:5px;color:#7f8c8d;}
+    .toppings-options{display:flex;flex-wrap:wrap;gap:5px;}
+    .topping{background:#ecf0f1;border:1px solid #bdc3c7;padding:5px 8px;border-radius:15px;font-size:.8rem;cursor:pointer;}
+    .topping.selected{background:#e67e22;color:white;border-color:#e67e22;}
+    .add-to-cart{background:#e67e22;color:#fff;border:none;padding:10px;width:100%;border-radius:5px;cursor:pointer;font-weight:bold;margin-top:10px;}
+    .add-to-cart:hover{background:#d35400;}
+    footer{background:#5a3e2b;color:#fff;text-align:center;padding:15px;margin-top:20px;font-size:.9rem;}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:200;}
+    .modal-content{background:#fff;margin:15% auto;padding:20px;width:90%;max-width:400px;border-radius:10px;max-height:70vh;overflow-y:auto;}
+    .close-modal{float:right;font-size:1.5rem;cursor:pointer;}
+    .cart-item{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #ecf0f1;}
+    .checkout-btn{background:#27ae60;color:#fff;border:none;padding:10px;width:100%;border-radius:5px;cursor:pointer;font-weight:bold;margin-top:15px;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">Xôi</div>
+    <div class="cart-icon" onclick="openCart()">🛒 <span class="cart-count" id="cart-count">0</span></div>
+  </header>
+
+  <div class="category-tabs">
+    <div class="tab active" onclick="showCategory('sticky-rice')">Sticky Rice</div>
+    <div class="tab" onclick="showCategory('drinks')">Drinks</div>
+  </div>
+
+  <div id="sticky-rice" class="products"></div>
+  <div id="drinks" class="products" style="display:none;"></div>
+
+  <!-- Cart Modal -->
+  <div id="cart-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeCart()">&times;</span>
+      <h2>Your Cart</h2>
+
+      <!-- Customer Name Input -->
+      <div style="margin-top: 15px;">
+        <label for="customer-name" style="font-weight: bold;">Customer Name:</label>
+        <input type="text" id="customer-name" placeholder="Enter your name"
+          style="width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;">
+      </div>
+
+      <div id="cart-items"></div>
+      <div id="cart-total" style="text-align:right;font-weight:bold;margin-top:10px;"></div>
+      <button class="checkout-btn" onclick="checkout()">Checkout</button>
+    </div>
+  </div>
+
+  <footer>&copy; 2023 Sticky Delights. All rights reserved.</footer>
+
+  <script>
+    const products = {
+            'sticky-rice': [
+                { 
+                    id: 1, 
+                    name: 'Sticky Rice with Cassava', 
+                    price: 6.00, 
+                    image: 'srice_casava.jpg',
+                    toppings: [
+                        { name: 'Sweet Sesame', price: 0.75 },
+                        { name: 'Sweet Peanut Mix', price: 0.75 },
+                        { name: 'Fried Shallots', price: 0.75 },
+                        { name: 'Chinese Sausages', price: 1.50 },
+                        { name: 'Savoury Sesame', price: 0.75 },
+                        { name: 'Savoury Peanut Mix', price: 0.75 }
+                    ]
+                },
+                { 
+                    id: 2, 
+                    name: 'Sticky Rice with Black Rice', 
+                    price: 6.00, 
+                    image: 'srice_blackrice.jpg',
+                    toppings: [
+                        { name: 'Sweet Sesame', price: 0.75 },
+                        { name: 'Sweet Peanut Mix', price: 0.75 },
+                        { name: 'Fried Shallots', price: 0.75 },
+                        { name: 'Chinese Sausages', price: 1.50 },
+                        { name: 'Savoury Sesame', price: 0.75 },
+                        { name: 'Savoury Peanut Mix', price: 0.75 }
+                    ]
+                },
+                { 
+                    id: 3, 
+                    name: 'Sticky Rice with Mung Beans', 
+                    price: 6.00, 
+                    image: 'srice_mungbeans.jpg',
+                    toppings: [
+                        { name: 'Sweet Sesame', price: 0.75 },
+                        { name: 'Sweet Peanut Mix', price: 0.75 },
+                        { name: 'Fried Shallots', price: 0.75 },
+                        { name: 'Chinese Sausages', price: 1.50 },
+                        { name: 'Savoury Sesame', price: 0.75 },
+                        { name: 'Savoury Peanut Mix', price: 0.75 }
+                    ]
+                },
+                { 
+                    id: 4, 
+                    name: 'Sticky Rice with Red Beans', 
+                    price: 6.00, 
+                    image: 'srice_redbeans.jpg',
+                    toppings: [
+                        { name: 'Sweet Sesame', price: 0.75 },
+                        { name: 'Sweet Peanut Mix', price: 0.75 },
+                        { name: 'Fried Shallots', price: 0.75 },
+                        { name: 'Chinese Sausages', price: 1.50 },
+                        { name: 'Savoury Sesame', price: 0.75 },
+                        { name: 'Savoury Peanut Mix', price: 0.75 }
+                    ]
+                },
+
+                { 
+                    id: 5, 
+                    name: 'Sticky Rice with Gấc Fruit', 
+                    price: 7.00, 
+                    image: 'srice_gac.jpg',
+                    toppings: [
+                        { name: 'Sweet Sesame', price: 0.75 },
+                        { name: 'Sweet Peanut Mix', price: 0.75 },
+                        { name: 'Fried Shallots', price: 0.75 },
+                        { name: 'Chinese Sausages', price: 1.50 },
+                        { name: 'Savoury Sesame', price: 0.75 },
+                        { name: 'Savoury Peanut Mix', price: 0.75 }
+                    ]
+                }
+            ],
+            'drinks': [
+                { id: 6, name: 'Coke', price: 2.50, image: 'Cokezero.jpg' },
+                { id: 7, name: 'Sprite', price: 2.50, image: 'Sprite.jpg' },
+                { id: 8, name: 'Milk Bubble Tea', price: 4.50, image: 'bubblemilktea1.jpg' }
+            ]
+    };
+
+    let cart = [];
+
+    document.addEventListener('DOMContentLoaded', function() {
+      loadProducts('sticky-rice');
+      loadProducts('drinks');
+      updateCartCount();
+    });
+
+    function loadProducts(category) {
+      const container = document.getElementById(category);
+      container.innerHTML = '';
+      products[category].forEach(product => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        const hasToppings = product.toppings && product.toppings.length;
+        card.innerHTML = `
+          <img src="${product.image}" alt="${product.name}" class="product-image">
+          <div class="product-info">
+            <div class="product-title">${product.name}</div>
+            <div class="product-price">£${product.price.toFixed(2)}</div>
+            ${hasToppings ? `
+              <div class="toppings-section">
+                <div class="toppings-title">Choose Toppings (+ price each):</div>
+                <div class="toppings-options" id="toppings-${product.id}">
+                  ${product.toppings.map(t =>
+                    `<div class="topping" onclick="toggleTopping(this, ${product.id}, '${t.name}', ${t.price})">
+                      ${t.name} (+£${t.price.toFixed(2)})
+                    </div>`).join('')}
+                </div>
+              </div>` : ''}
+            <button class="add-to-cart" onclick="addToCart(${product.id}, ${hasToppings})">Add to Cart</button>
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+
+
+        // Switch between categories
+        function showCategory(category) {
+            document.getElementById('sticky-rice').style.display = 'none';
+            document.getElementById('drinks').style.display = 'none';
+            document.getElementById(category).style.display = 'grid';
+            
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+
+
+    function toggleTopping(el, productId, toppingName, toppingPrice) {
+      el.classList.toggle('selected');
+      const product = products['sticky-rice'].find(p => p.id === productId);
+      if (!product.selectedToppings) product.selectedToppings = [];
+      if (el.classList.contains('selected')) {
+        product.selectedToppings.push({ name: toppingName, price: toppingPrice });
+      } else {
+        product.selectedToppings = product.selectedToppings.filter(t => t.name !== toppingName);
+      }
+    }
+
+    function addToCart(productId, hasToppings) {
+      let product;
+      for (const cat in products) {
+        product = products[cat].find(p => p.id === productId);
+        if (product) break;
+      }
+      if (!product) return;
+
+      const selectedToppings = hasToppings && product.selectedToppings ? [...product.selectedToppings] : [];
+      const basePrice = product.price;
+      const toppingsPrice = selectedToppings.reduce((sum, t) => sum + t.price, 0);
+      const totalPrice = basePrice + toppingsPrice;
+
+      cart.push({
+        id: product.id,
+        name: product.name,
+        basePrice,
+        toppings: selectedToppings,
+        toppingsPrice,
+        totalPrice,
+        quantity: 1
+      });
+
+      updateCartCount();
+      alert(`${product.name} added to cart!`);
+      product.selectedToppings = []; // reset selection
+      loadProducts('sticky-rice'); // re-render products to clear selections
+    }
+
+    function updateCartCount() {
+      document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + i.quantity, 0);
+    }
+
+    function openCart() {
+      const modal = document.getElementById('cart-modal');
+      const container = document.getElementById('cart-items');
+      if (!cart.length) {
+        container.innerHTML = '<p>Your cart is empty</p>';
+        document.getElementById('cart-total').textContent = '';
+      } else {
+        container.innerHTML = '';
+        let total = 0;
+        cart.forEach((item, i) => {
+          const el = document.createElement('div');
+          el.className = 'cart-item';
+          el.innerHTML = `
+            <div>
+              ${item.name}<br>
+              ${item.toppings.length ? `<small>Toppings: ${item.toppings.map(t => t.name).join(', ')}</small>` : ''}
+            </div>
+            <div style="text-align:right;">
+              <button onclick="changeQuantity(${i}, -1)">−</button>
+              <span style="margin:0 8px;">${item.quantity}</span>
+              <button onclick="changeQuantity(${i}, 1)">+</button>
+              <div>£${item.totalPrice.toFixed(2)}</div>
+            </div>`;
+          container.appendChild(el);
+          total += item.totalPrice;
+        });
+        document.getElementById('cart-total').textContent = `Total: £${total.toFixed(2)}`;
+      }
+      modal.style.display = 'block';
+    }
+
+    function closeCart(){ document.getElementById('cart-modal').style.display='none'; }
+
+    function changeQuantity(index, delta) {
+      cart[index].quantity += delta;
+      if (cart[index].quantity <= 0) {
+        cart.splice(index,1);
+      } else {
+        const base = cart[index].basePrice + cart[index].toppingsPrice;
+        cart[index].totalPrice = base * cart[index].quantity;
+      }
+      updateCartCount();
+      openCart();
+    }
+
+    function checkout() {
+      if (!cart.length) { alert('Your cart is empty!'); return; }
+      const name = document.getElementById('customer-name').value;
+      if (!name) { alert('Please enter your name before checkout.'); return; }
+      alert('Proceeding to checkout!\nCustomer: ' + name);
+      cart = [];
+      updateCartCount();
+      closeCart();
+    }
+
+    window.onclick = e => { if (e.target === document.getElementById('cart-modal')) closeCart(); }
+  </script>
+</body>
+</html>
