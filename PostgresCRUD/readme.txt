@@ -1,11 +1,11 @@
 This is the CRUD maintenance screens for tables 
 
 DEALERS
-    CREATE TABLE dealers (
+    CREATE TABLE bp (
         id SERIAL PRIMARY KEY,
-        legalname VARCHAR(150) NOT NULL,
+        legalname VARCHAR(255),
         tname VARCHAR(100),
-        address TEXT
+        address TEXT, telephone VARCHAR(255)
     );
 
 USERS
@@ -13,7 +13,7 @@ USERS
       id SERIAL PRIMARY KEY,
       name VARCHAR(100),
       email VARCHAR(100),
-      dealer_id INT REFERENCES dealers(id);
+      bp_id INT REFERENCES bp(id);
   );
 
 
@@ -23,7 +23,7 @@ ORDERS
           user_id INT REFERENCES users(id),
           product_id INT REFERENCES products(id),
           quantity INT,
-          dealer_id INT REFERENCES dealers(id)
+          bp_id INT REFERENCES bp(id)
       );
 
 
@@ -34,6 +34,6 @@ PRODUCTS
         id SERIAL PRIMARY KEY,
         name VARCHAR(100),
         price NUMERIC(10,2),
-       dealer_id INT REFERENCES dealers(id)
+       bp_id INT REFERENCES bp(id)
     );
 
