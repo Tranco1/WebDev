@@ -13,7 +13,7 @@ USERS
       id SERIAL PRIMARY KEY,
       name VARCHAR(100),
       email VARCHAR(100),
-      bp_id INT REFERENCES bp(id);
+      bp_id INT REFERENCES bp(id)
   );
 
 
