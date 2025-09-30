@@ -156,10 +156,10 @@ app.get("/users/delete/:id", requireLogin, async (req, res) => {
 
 /* ================= PRODUCTS ================= */
 app.post("/products/add", requireLogin, async (req, res) => {
-  const { name, price, dealer_id } = req.body;
+  const { name, price, dealer_id, desc2, img } = req.body;
   await pool.query(
-    "INSERT INTO products (name, price, dealer_id) VALUES ($1, $2, $3)",
-    [name, price, dealer_id || null]
+    "INSERT INTO products (name, price, dealer_id, desc2, img) VALUES ($1, $2, $3, $4, $5)",
+    [name, price, dealer_id, desc2, img || null]
   );
   res.redirect("/");
 });
