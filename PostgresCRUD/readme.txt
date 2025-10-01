@@ -34,6 +34,8 @@ PRODUCTS
         id SERIAL PRIMARY KEY,
         name VARCHAR(100),
         price NUMERIC(10,2),
-       bp_id INT REFERENCES bp(id)
+        bp_id INT REFERENCES bp(id),
+        desc2 VARCHAR(255),
+        img VARCHAR(255)
     );
 
