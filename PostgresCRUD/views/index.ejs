@@ -72,10 +72,13 @@
       </select>
       <input type="text" name="desc2" placeholder="Desc2" required>
       <input type="text" name="img" placeholder="Image" required>
+      <input type="text" name="category" placeholder="Category" required>
+
       <button type="submit">Add</button>
     </form>
     <table border="1">
-      <tr><th>ID</th><th>Name</th><th>Price</th><th>Dealer</th><th>desc2</th><th>img</th><th>Actions</th></tr>
+      <tr><th>ID</th><th>Name</th><th>Price</th><th>Dealer</th><th>desc2</th><th>img</th>
+      <th>category</th><th>Actions</th></tr>
       <% products.forEach(p => { %>
         <tr>
           <td><%= p.id %></td>
@@ -84,6 +87,7 @@
           <td><%= p.dealer_name || '' %></td>
           <td><%= p.desc2 %></td>
           <td><%= p.img %></td>
+          <td><%= p.category %></td>
           <td>
             <a href="/products/edit/<%= p.id %>">Edit</a>
             <a href="/products/delete/<%= p.id %>">Delete</a>

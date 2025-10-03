@@ -156,10 +156,10 @@ app.get("/users/delete/:id", requireLogin, async (req, res) => {
 
 /* ================= PRODUCTS ================= */
 app.post("/products/add", requireLogin, async (req, res) => {
-  const { name, price, dealer_id, desc2, img } = req.body;
+  const { name, price, dealer_id, desc2, img, category } = req.body;
   await pool.query(
-    "INSERT INTO products (name, price, dealer_id, desc2, img) VALUES ($1, $2, $3, $4, $5)",
-    [name, price, dealer_id, desc2, img || null]
+    "INSERT INTO products (name, price, dealer_id, desc2, img, category) VALUES ($1, $2, $3, $4, $5, $6)",
+    [name, price, dealer_id, desc2, img, category || null]
   );
   res.redirect("/");
 });
@@ -171,10 +171,10 @@ app.get("/products/edit/:id", requireLogin, async (req, res) => {
 });
 
 app.post("/products/update/:id", requireLogin, async (req, res) => {
-  const { name, price, dealer_id, desc2, img } = req.body;
+  const { name, price, dealer_id, desc2, img, category } = req.body;
   await pool.query(
-    "UPDATE products SET name=$1, price=$2, dealer_id=$3, desc2=$4, img=$5 WHERE id=$6",
-    [name, price, dealer_id || null, desc2, img, req.params.id]
+    "UPDATE products SET name=$1, price=$2, dealer_id=$3, desc2=$4, img=$5, category=$6 WHERE id=$7",
+    [name, price, dealer_id || null, desc2, img, category, req.params.id]
   );
   res.redirect("/");
 });
