@@ -24,6 +24,7 @@
     <span class="tab" onclick="showTab('products')">Products</span>
     <span class="tab" onclick="showTab('orders')">Orders</span>
     <span class="tab" onclick="showTab('dealers')">Dealers</span>
+    <span class="tab" onclick="showTab('category')">Category</span>
   </div>
 
   <!-- USERS -->
@@ -163,5 +164,37 @@
       <% }) %>
     </table>
   </div>
+
+  <!-- CATEGORY -->
+  <div id="category" class="tab-content">
+    <h2>Category</h2>
+    <form action="/category/add" method="POST">
+      <input type="text" name="sortcode" placeholder="Sort Order" required>
+      <input type="text" name="cname" placeholder="Category Name" required>
+      <select name="dealer_id">
+        <option value="">-- Select Dealer --</option>
+        <% dealers.forEach(d => { %>
+          <option value="<%= d.id %>"><%= d.legalname %></option>
+        <% }) %>
+      </select>
+      <button type="submit">Add</button>
+    </form>
+    <table border="1">
+      <tr><th>ID</th><th>Sort Order</th><th>Category Name</th><th>Dealer_id</th><th>Actions</th></tr>
+      <% category.forEach(c => { %>
+        <tr>
+          <td><%= c.id %></td>
+          <td><%= c.sortcode %></td>
+          <td><%= c.cname %></td>
+          <td><%= c.dealer_id %></td>
+          <td>
+            <a href="/category/edit/<%= c.id %>">Edit</a>
+            <a href="/category/delete/<%= c.id %>">Delete</a>
+          </td>
+        </tr>
+      <% }) %>
+    </table>
+  </div>
+
 </body>
 </html>

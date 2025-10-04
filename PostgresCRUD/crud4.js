@@ -106,11 +106,14 @@ app.get("/", requireLogin, async (req, res) => {
 
   const dealers = await pool.query("SELECT * FROM dealers ORDER BY id ASC");
 
+  const category = await pool.query("SELECT * FROM category ORDER BY id ASC");
+
   res.render("index", {
     users: users.rows,
     products: products.rows,
     orders: orders.rows,
     dealers: dealers.rows,
+    category: category.rows
   });
 });
 
@@ -244,6 +247,37 @@ app.get("/dealers/delete/:id", requireLogin, async (req, res) => {
   await pool.query("DELETE FROM dealers WHERE id=$1", [req.params.id]);
   res.redirect("/");
 });
+
+/* ================= CATEGORY ================= */
+app.post("/category/add", requireLogin, async (req, res) => {
+  const { sortcode, cname, dealer_id } = req.body;
+  await pool.query(
+    "INSERT INTO category (sortcode, cname, dealer_id) VALUES ($1, $2, $3)",
+    [sortcode, cname, dealer_id]
+  );
+  res.redirect("/");
+});
+
+app.get("/category/edit/:id", requireLogin, async (req, res) => {
+  const category = (await pool.query("SELECT * FROM category WHERE id=$1", [req.params.id])).rows[0];
+  const dealers = (await pool.query("SELECT * FROM dealers ORDER BY id ASC")).rows;
+  res.render("edit-category", { category, dealers });
+});
+
+app.post("/category/update/:id", requireLogin, async (req, res) => {
+  const { sortcode, cname, dealer_id } = req.body;
+  await pool.query(
+    "UPDATE category SET sortcode=$1, cname=$2, dealer_id=$3 WHERE id=$4",
+    [sortcode, cname, dealer_id, req.params.id]
+  );
+  res.redirect("/");
+});
+
+app.get("/category/delete/:id", requireLogin, async (req, res) => {
+  await pool.query("DELETE FROM category WHERE id=$1", [req.params.id]);
+  res.redirect("/");
+});
+
 
 /* ================= START ================= */
 app.listen(port, () => {
