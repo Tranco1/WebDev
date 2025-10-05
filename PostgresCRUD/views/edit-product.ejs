@@ -25,7 +25,14 @@
     <label>Image:</label>
     <input type="text" name="img" value="<%= product.img %>" required><br><br>
     <label>Category:</label>
-    <input type="text" name="category" value="<%= product.category %>" required><br><br>
+    <select name="category">
+      <option value="">-- Select Category --</option>
+      <% category.forEach(c => { %>
+        <option value="<%= c.id %>" <%= product.category === c.id ? 'selected' : '' %>>
+          <%= c.cname %>
+        </option>
+      <% }) %>
+    </select><br><br>
 
     <button type="submit">Update</button>
   </form>

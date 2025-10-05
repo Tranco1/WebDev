@@ -73,7 +73,13 @@
       </select>
       <input type="text" name="desc2" placeholder="Desc2" required>
       <input type="text" name="img" placeholder="Image" required>
-      <input type="text" name="category" placeholder="Category" required>
+
+      <select name="category">
+        <option value="">-- Select Category --</option>
+        <% category.forEach(c => { %>
+          <option value="<%= c.id %>"><%= c.cname %></option>
+        <% }) %>
+      </select>
 
       <button type="submit">Add</button>
     </form>
@@ -88,7 +94,7 @@
           <td><%= p.dealer_name || '' %></td>
           <td><%= p.desc2 %></td>
           <td><%= p.img %></td>
-          <td><%= p.category %></td>
+          <td><%= p.category_name || '' %></td>
           <td>
             <a href="/products/edit/<%= p.id %>">Edit</a>
             <a href="/products/delete/<%= p.id %>">Delete</a>

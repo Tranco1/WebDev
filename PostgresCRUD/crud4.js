@@ -90,8 +90,10 @@ app.get("/", requireLogin, async (req, res) => {
   );
 
   const products = await pool.query(
-    `SELECT products.*, dealers.legalname as dealer_name 
-     FROM products LEFT JOIN dealers ON products.dealer_id = dealers.id
+    `SELECT products.*, d.legalname as dealer_name, c.cname as category_name 
+     FROM products
+     JOIN category c ON products.category = c.id  
+     LEFT JOIN dealers d ON products.dealer_id = d.id
      ORDER BY products.id ASC`
   );
 
@@ -170,7 +172,8 @@ app.post("/products/add", requireLogin, async (req, res) => {
 app.get("/products/edit/:id", requireLogin, async (req, res) => {
   const product = (await pool.query("SELECT * FROM products WHERE id=$1", [req.params.id])).rows[0];
   const dealers = (await pool.query("SELECT * FROM dealers ORDER BY id ASC")).rows;
-  res.render("edit-product", { product, dealers });
+  const category = (await pool.query("SELECT * FROM category ORDER BY id ASC")).rows;
+  res.render("edit-product", { product, dealers, category });
 });
 
 app.post("/products/update/:id", requireLogin, async (req, res) => {
