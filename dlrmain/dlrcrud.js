@@ -78,7 +78,12 @@ app.get("/", requireLogin, async (req, res) => {
 
   // Only products for this dealer
   const products = await pool.query(
-    `SELECT * FROM products WHERE dealer_id=$1 ORDER BY id ASC`,
+   `SELECT products.*, d.legalname as dealer_name, c.cname as category_name
+     FROM products
+     JOIN category c ON products.category = c.id
+     LEFT JOIN dealers d ON products.dealer_id = d.id
+     WHERE products.dealer_id=$1
+     ORDER BY products.id ASC`,
     [dealer_id]
   );
 
@@ -99,11 +104,20 @@ app.get("/", requireLogin, async (req, res) => {
     [dealer_id]
   );
 
+  // Only this dealer
+  const category = await pool.query(
+    "SELECT * FROM category WHERE dealer_id=$1",
+    [dealer_id]
+  );
+
+
+
   res.render("index", {
     users: users.rows,
     products: products.rows,
     orders: orders.rows,
-    dealers: dealers.rows
+    dealers: dealers.rows,
+    category: category.rows
   });
 });
 
@@ -150,10 +164,10 @@ app.get("/users/delete/:id", requireLogin, async (req, res) => {
 
 /* ================= PRODUCTS ================= */
 app.post("/products/add", requireLogin, async (req, res) => {
-  const { name, price, dealer_id, desc2, img } = req.body;
+  const { name, price, dealer_id, desc2, img, category } = req.body;
   await pool.query(
-    "INSERT INTO products (name, price, dealer_id, desc2, img) VALUES ($1, $2, $3, $4, $5)",
-    [name, price, dealer_id, desc2, img || null]
+    "INSERT INTO products (name, price, dealer_id, desc2, img, category) VALUES ($1, $2, $3, $4, $5, $6)",
+    [name, price, dealer_id, desc2, img, category || null]
   );
   res.redirect("/");
 });
@@ -238,6 +252,37 @@ app.get("/dealers/delete/:id", requireLogin, async (req, res) => {
   await pool.query("DELETE FROM dealers WHERE id=$1", [req.params.id]);
   res.redirect("/");
 });
+
+/* ================= CATEGORY ================= */
+app.post("/category/add", requireLogin, async (req, res) => {
+  const { sortcode, cname, dealer_id } = req.body;
+  await pool.query(
+    "INSERT INTO category (sortcode, cname, dealer_id) VALUES ($1, $2, $3)",
+    [sortcode, cname, dealer_id]
+  );
+  res.redirect("/");
+});
+
+app.get("/category/edit/:id", requireLogin, async (req, res) => {
+  const category = (await pool.query("SELECT * FROM category WHERE id=$1", [req.params.id])).rows[0];
+  const dealers = (await pool.query("SELECT * FROM dealers ORDER BY id ASC")).rows;
+  res.render("edit-category", { category, dealers });
+});
+
+app.post("/category/update/:id", requireLogin, async (req, res) => {
+  const { sortcode, cname, dealer_id } = req.body;
+  await pool.query(
+    "UPDATE category SET sortcode=$1, cname=$2, dealer_id=$3 WHERE id=$4",
+    [sortcode, cname, dealer_id, req.params.id]
+  );
+  res.redirect("/");
+});
+
+app.get("/category/delete/:id", requireLogin, async (req, res) => {
+  await pool.query("DELETE FROM category WHERE id=$1", [req.params.id]);
+  res.redirect("/");
+});
+
 
 /* ================= START ================= */
 app.listen(port, () => {
