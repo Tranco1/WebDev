@@ -1,19 +1,26 @@
 This is the CRUD maintenance screens for tables 
 
 DEALERS
-    CREATE TABLE bp (
+    CREATE TABLE dealers (
         id SERIAL PRIMARY KEY,
         legalname VARCHAR(255),
         tname VARCHAR(100),
         address TEXT, telephone VARCHAR(255)
     );
 
+CREATE TABLE category (
+    id SERIAL PRIMARY KEY, 
+    sortcode VARCHAR(2),
+    cname VARCHAR(100),
+    dealer_id INT REFERENCES dealers(id)
+);
+
 USERS
   CREATE TABLE users (
       id SERIAL PRIMARY KEY,
       name VARCHAR(100),
       email VARCHAR(100),
-      bp_id INT REFERENCES bp(id)
+      dealer_id INT REFERENCES dealer(id)
   );
 
 
@@ -23,7 +30,7 @@ ORDERS
           user_id INT REFERENCES users(id),
           product_id INT REFERENCES products(id),
           quantity INT,
-          bp_id INT REFERENCES bp(id)
+          dealer_id INT REFERENCES dealer(id)
       );
 
 
@@ -34,8 +41,9 @@ PRODUCTS
         id SERIAL PRIMARY KEY,
         name VARCHAR(100),
         price NUMERIC(10,2),
-        bp_id INT REFERENCES bp(id),
+        dealer_id INT REFERENCES dealer(id),
         desc2 VARCHAR(255),
-        img VARCHAR(255)
+        img VARCHAR(255),
+        category INT REFERENCES category(id)
     );
 
