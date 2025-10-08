@@ -26,11 +26,21 @@ USERS
 
 ORDERS
       CREATE TABLE orders (
-          id SERIAL PRIMARY KEY,
+          order_id SERIAL PRIMARY KEY,
           user_id INT REFERENCES users(id),
+          customer_name TEXT NOT NULL,
+          order_date TIMESTAMP DEFAULT NOW(),
+          total NUMERIC(10,2),
+          dealer_id INT REFERENCES dealers(id)
+      );
+
+
+      CREATE TABLE orders_items (
+          id SERIAL PRIMARY KEY,
+          order_id INT REFERENCES orders(order_id),
           product_id INT REFERENCES products(id),
           quantity INT,
-          dealer_id INT REFERENCES dealer(id)
+          price NUMERIC(10,2) NOT NULL
       );
 
 
