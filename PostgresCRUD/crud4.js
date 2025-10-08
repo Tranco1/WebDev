@@ -98,12 +98,11 @@ app.get("/", requireLogin, async (req, res) => {
   );
 
   const orders = await pool.query(
-    `SELECT orders.*, u.name as user_name, p.name as product_name, d.legalname as dealer_name
+    `SELECT orders.*, u.name as user_name, d.legalname as dealer_name
      FROM orders
      JOIN users u ON orders.user_id = u.id
-     JOIN products p ON orders.product_id = p.id
      LEFT JOIN dealers d ON orders.dealer_id = d.id
-     ORDER BY orders.id ASC`
+     ORDER BY orders.order_id ASC`
   );
 
   const dealers = await pool.query("SELECT * FROM dealers ORDER BY id ASC");
@@ -192,16 +191,16 @@ app.get("/products/delete/:id", requireLogin, async (req, res) => {
 
 /* ================= ORDERS ================= */
 app.post("/orders/add", requireLogin, async (req, res) => {
-  const { user_id, product_id, quantity, dealer_id } = req.body;
+  const { user_id, customer_name, order_date, total, dealer_id } = req.body;
   await pool.query(
-    "INSERT INTO orders (user_id, product_id, quantity, dealer_id) VALUES ($1, $2, $3, $4)",
-    [user_id, product_id, quantity, dealer_id || null]
+    "INSERT INTO orders (user_id, customer_name, order_date, total, dealer_id) VALUES ($1, $2, $3, $4, $5)",
+    [user_id, customer_name, order_date, total, dealer_id || null]
   );
   res.redirect("/");
 });
 
 app.get("/orders/edit/:id", requireLogin, async (req, res) => {
-  const order = (await pool.query("SELECT * FROM orders WHERE id=$1", [req.params.id])).rows[0];
+  const order = (await pool.query("SELECT * FROM orders WHERE order_id=$1", [req.params.id])).rows[0];
   const users = (await pool.query("SELECT * FROM users ORDER BY id ASC")).rows;
   const products = (await pool.query("SELECT * FROM products ORDER BY id ASC")).rows;
   const dealers = (await pool.query("SELECT * FROM dealers ORDER BY id ASC")).rows;
@@ -209,16 +208,16 @@ app.get("/orders/edit/:id", requireLogin, async (req, res) => {
 });
 
 app.post("/orders/update/:id", requireLogin, async (req, res) => {
-  const { user_id, product_id, quantity, dealer_id } = req.body;
+  const { user_id, customer_name, order_date, total, dealer_id } = req.body;
   await pool.query(
-    "UPDATE orders SET user_id=$1, product_id=$2, quantity=$3, dealer_id=$4 WHERE id=$5",
-    [user_id, product_id, quantity, dealer_id || null, req.params.id]
+    "UPDATE orders SET user_id=$1, customer_name=$2, order_date=$3, total=$4, dealer_id=$5 WHERE order_id=$6",
+    [user_id, customer_name, order_date, total, dealer_id || null, req.params.id]
   );
   res.redirect("/");
 });
 
 app.get("/orders/delete/:id", requireLogin, async (req, res) => {
-  await pool.query("DELETE FROM orders WHERE id=$1", [req.params.id]);
+  await pool.query("DELETE FROM orders WHERE order_id=$1", [req.params.id]);
   res.redirect("/");
 });
 
