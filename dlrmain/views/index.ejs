@@ -111,12 +111,9 @@
           <option value="<%= u.id %>"><%= u.name %></option>
         <% }) %>
       </select>
-      <select name="product_id" required>
-        <% products.forEach(p => { %>
-          <option value="<%= p.id %>"><%= p.name %></option>
-        <% }) %>
-      </select>
-      <input type="number" name="quantity" placeholder="Quantity" required>
+      <input type="text" name="customer_name" placeholder="Customer Name" required>      
+      <input type="date" name="order_date" placeholder="Order Date" required>      
+      <input type="number" name="total" placeholder="Total" required>
       <select name="dealer_id">
         <option value="">-- Select Dealer --</option>
         <% dealers.forEach(d => { %>
@@ -126,17 +123,18 @@
       <button type="submit">Add</button>
     </form>
     <table border="1">
-      <tr><th>ID</th><th>User</th><th>Product</th><th>Quantity</th><th>Dealer</th><th>Actions</th></tr>
+      <tr><th>OrderID</th><th>User</th><th>Customer_Name</th><th>Order_Date</th><th>Total</th><th>Dealer</th><th>Actions</th></tr>
       <% orders.forEach(o => { %>
         <tr>
-          <td><%= o.id %></td>
+          <td><%= o.order_id %></td>
           <td><%= o.user_name %></td>
-          <td><%= o.product_name %></td>
-          <td><%= o.quantity %></td>
+          <td><%= o.customer_name %></td>
+          <td><%= o.order_date %></td>  
+          <td><%= o.total %></td>
           <td><%= o.dealer_name || '' %></td>
           <td>
-            <a href="/orders/edit/<%= o.id %>">Edit</a>
-            <a href="/orders/delete/<%= o.id %>">Delete</a>
+            <a href="/orders/edit/<%= o.order_id %>">Edit</a>
+            <a href="/orders/delete/<%= o.order_id %>">Delete</a>
           </td>
         </tr>
       <% }) %>
