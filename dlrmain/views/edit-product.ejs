@@ -3,7 +3,9 @@
 <head><title>Edit Product</title></head>
 <body>
   <h1>Edit Product</h1>
-  <form action="/products/update/<%= product.id %>" method="POST">
+  <form action="/products/update/<%= product.id %>" 
+    method="POST"
+    enctype="multipart/form-data">
     <label>Name:</label>
     <input type="text" name="name" value="<%= product.name %>" required><br><br>
 
@@ -24,6 +26,15 @@
     <input type="text" name="desc2" value="<%= product.desc2 %>" required><br><br>
     <label>Image:</label>
     <input type="text" name="img" value="<%= product.img %>" required><br><br>
+
+    <% if (product.img) { %>
+      <label>Current Image:</label><br>
+      <img src="<%= product.img %>" alt="Product Image" width="150"><br><br>
+    <% } %>
+
+    <label>Upload New Image:</label>
+    <input type="file" name="image" accept="image/*"><br><br>
+
 
     <button type="submit">Update</button>
   </form>

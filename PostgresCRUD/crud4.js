@@ -15,6 +15,33 @@ const pool = new Pool({
   password: "aass",
   port: 5432,
 });
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
+
+// Configure file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dealerId = req.session.user.dealer_id;
+    const uploadPath = path.join(__dirname, "public", "img", String(dealerId));
+
+    // Ensure dealer folder exists
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+//    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9_.-]/g, "_");
+    cb(null, safeName);
+  },
+});
+
+const upload = multer({ storage });
+
+// Make /public accessible to browser
+app.use(express.static(path.join(__dirname, "public")));
+
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -54,7 +81,7 @@ app.post("/login", async (req, res) => {
     return res.send("Invalid email or password. <a href='/login'>Try again</a>");
   }
 
-  req.session.user = { id: user.id, name: user.name, email: user.email };
+  req.session.user = { id: user.id, name: user.name, email: user.email,dealer_id: user.dealer_id };
   res.redirect("/");
 });
 
@@ -175,11 +202,23 @@ app.get("/products/edit/:id", requireLogin, async (req, res) => {
   res.render("edit-product", { product, dealers, category });
 });
 
-app.post("/products/update/:id", requireLogin, async (req, res) => {
+app.post("/products/update/:id", requireLogin,
+upload.single("image"),
+async (req, res) => {
   const { name, price, dealer_id, desc2, img, category } = req.body;
+    // Only allow updating within your dealer scope
+    const productCheck = await pool.query(
+      "SELECT * FROM products WHERE id=$1 AND dealer_id=$2",
+      [req.params.id, dealer_id]
+    );
+let imagePath = productCheck.rows[0].img;
+    if (req.file) {
+      imagePath = `/img/${dealer_id}/${req.file.filename}`;
+    }
+
   await pool.query(
     "UPDATE products SET name=$1, price=$2, dealer_id=$3, desc2=$4, img=$5, category=$6 WHERE id=$7",
-    [name, price, dealer_id || null, desc2, img, category, req.params.id]
+    [name, price, dealer_id || null, desc2, imagePath, category, req.params.id]
   );
   res.redirect("/");
 });

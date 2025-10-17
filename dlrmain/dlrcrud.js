@@ -3,7 +3,9 @@ const bodyParser = require("body-parser");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 const { Pool } = require("pg");
-
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 const app = express();
 const port = 3000;
 
@@ -15,6 +17,31 @@ const pool = new Pool({
   password: "aass",
   port: 5432,
 });
+
+// Configure file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const dealerId = req.session.user.dealer_id;
+    const uploadPath = path.join(__dirname, "public", "img", String(dealerId));
+
+    // Ensure dealer folder exists
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+//    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+//    cb(null, uniqueSuffix + path.extname(file.originalname));
+    const safeName = file.originalname.replace(/[^a-zA-Z0-9_.-]/g, "_");
+    cb(null, safeName);
+  },
+});
+
+const upload = multer({ storage });
+
+// Make /public accessible to browser
+app.use(express.static(path.join(__dirname, "public")));
+
+
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -174,14 +201,35 @@ app.post("/products/add", requireLogin, async (req, res) => {
 app.get("/products/edit/:id", requireLogin, async (req, res) => {
   const product = (await pool.query("SELECT * FROM products WHERE id=$1", [req.params.id])).rows[0];
   const dealers = (await pool.query("SELECT * FROM dealers ORDER BY id ASC")).rows;
-  res.render("edit-product", { product, dealers });
+  const category = (await pool.query("SELECT * FROM category ORDER BY id ASC")).rows;
+  res.render("edit-product", { product, dealers, category });
 });
 
-app.post("/products/update/:id", requireLogin, async (req, res) => {
-  const { name, price, dealer_id, desc2, img } = req.body;
+app.post("/products/update/:id", requireLogin,
+upload.single("image"),
+async (req, res) => {
+  const { name, price, dealer_id, desc2, img, category } = req.body;
+  // Only allow updating within your dealer scope
+  const productCheck = await pool.query(
+    "SELECT * FROM products WHERE id=$1 AND dealer_id=$2",
+    [req.params.id, dealer_id]
+  );
+  if (productCheck.rows.length === 0) {
+    return res.send("Unauthorized or product not found.");
+  }
+
+  let imagePath = productCheck.rows[0].img;
+
+  if (req.file) {
+    imagePath = `/img/${dealer_id}/${req.file.filename}`;
+//        const safeName = req.file.originalname.replace(/[^a-zA-Z0-9_.-]/g, "_");
+//        imagePath = `/img/${dealer_id}/${safeName}`;
+  }
+
+
   await pool.query(
     "UPDATE products SET name=$1, price=$2, dealer_id=$3, desc2=$4, img=$5 WHERE id=$6",
-    [name, price, dealer_id || null, desc2, img, req.params.id]
+    [name, price, dealer_id || null, desc2, imagePath, req.params.id]
   );
   res.redirect("/");
 });
